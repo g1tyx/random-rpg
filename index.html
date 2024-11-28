@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNG RPG Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 2fr 1fr;
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        #game, #shop, #jobs, #quests, #npcs, #developer {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game {
+            grid-column: 2;
+            grid-row: 1;
+            width: 100%;
+        }
+
+        #shop {
+            grid-column: 3;
+            grid-row: 1;
+            width: 100%;
+        }
+
+        #jobs {
+            grid-column: 1;
+            grid-row: 1;
+            width: 100%;
+        }
+
+        #npcs {
+            grid-column: 1;
+            grid-row: 2;
+            width: 100%;
+        }
+
+        #quests {
+            grid-column: 2 / 4;
+            grid-row: 2;
+            width: 100%;
+        }
+
+        h1, h2, h3 {
+            color: #343a40;
+            margin: 0 0 20px;
+        }
+
+        #difficulty, #region {
+            margin-bottom: 20px;
+        }
+
+        #difficulty label, #region label {
+            margin-right: 10px;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 16px;
+            width: 120px;
+        }
+
+        #stats, #gameplay {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #stats p, #gameplay p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #495057;
+        }
+
+        #input-area {
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 100px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #messages {
+            font-size: 16px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        #shop h2, #jobs h2, #quests h2, #npcs h2 {
+            color: #343a40;
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+        #shop p, #jobs p {
+            font-size: 16px;
+            color: #495057;
+        }
+
+        .job-button {
+            margin: 5px 0;
+            padding: 5px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .job-button:hover {
+            background-color: #0056b3;
+        }
+
+        .locked {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .locked:hover {
+            background-color: #6c757d;
+        }
+
+        #death-screen {
+            display: none;
+        }
+
+        #enemy-image {
+            width: 100px;
+            height: 100px;
+            margin-top: 10px;
+        }
+
+        #complete-quest-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #npcs button {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #npcs button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        #bonus-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        #bonus-popup h2 {
+            margin: 0 0 10px;
+        }
+
+        #bonus-popup p {
+            margin-bottom: 10px;
+        }
+
+        .job-bonus-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .job-bonus-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .job-bonus-list li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            #container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(5, auto);
+            }
+            #game, #shop, #jobs, #quests, #npcs {
+                width: 90%;
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script src="chs.js"></script>
+    <script src="core.js"></script>
+    <div id="container">
+        <div id="jobs">
+            <h2>Jobs</h2>
+            <div id="commoners">
+                <h3>Commoners</h3>
+                <button class="job-button locked" id="beggar-job" onclick="selectJob('Beggar')" disabled>Beggar</button>
+                <button class="job-button locked" id="farmer-job" onclick="selectJob('Farmer')" disabled>Farmer</button>
+                <button class="job-button locked" id="craftsman-job" onclick="selectJob('Craftsman')" disabled>Craftsman</button>
+                <button class="job-button locked" id="blacksmith-job" onclick="selectJob('Blacksmith')" disabled>Blacksmith</button>
+                <button class="job-button locked" id="merchant-job" onclick="selectJob('Merchant')" disabled>Merchant</button>
+                <button class="job-button locked" id="guildmaster-job" onclick="selectJob('Guildmaster')" disabled>Guildmaster</button>
+            </div>
+            <div id="adventurers">
+                <h3>Adventurers</h3>
+                <button class="job-button locked" id="squire-job" onclick="selectJob('Squire')" disabled>Squire</button>
+                <button class="job-button locked" id="knight-job" onclick="selectJob('Knight')" disabled>Knight</button>
+                <button class="job-button locked" id="gladiator-job" onclick="selectJob('Gladiator')" disabled>Gladiator</button>
+                <button class="job-button locked" id="blademaster-job" onclick="selectJob('Blademaster')" disabled>Blademaster</button>
+                <button class="job-button locked" id="assassin-job" onclick="selectJob('Assassin')" disabled>Assassin</button>
+                <button class="job-button locked" id="slayer-job" onclick="selectJob('Slayer')" disabled>Slayer</button>
+            </div>
+            <div id="scholars">
+                <h3>Scholars</h3>
+                <button class="job-button locked" id="apprentice-job" onclick="selectJob('Apprentice')" disabled>Apprentice</button>
+                <button class="job-button locked" id="mage-job" onclick="selectJob('Mage')" disabled>Mage</button>
+                <button class="job-button locked" id="spellblade-job" onclick="selectJob('Spellblade')" disabled>Spellblade</button>
+                <button class="job-button locked" id="archmage-job" onclick="selectJob('Archmage')" disabled>Archmage</button>
+                <button class="job-button locked" id="necromancer-job" onclick="selectJob('Necromancer')" disabled>Necromancer</button>
+                <button class="job-button locked" id="prophet-job" onclick="selectJob('Prophet')" disabled>Prophet</button>
+            </div>
+
+            <div class="job-bonus-list">
+                <h3>Job Bonuses</h3>
+                <ul>
+                    <li id="beggar-bonus">Beggar: TBD</li>
+                    <li id="farmer-bonus">Farmer: TBD</li>
+                    <li id="craftsman-bonus">Craftsman: TBD</li>
+                    <li id="blacksmith-bonus">Blacksmith: TBD</li>
+                    <li id="merchant-bonus">Merchant: TBD</li>
+                    <li id="guildmaster-bonus">Guildmaster: TBD</li>
+                    <li id="squire-bonus">Squire: TBD</li>
+                    <li id="knight-bonus">Knight: TBD</li>
+                    <li id="gladiator-bonus">Gladiator: TBD</li>
+                    <li id="blademaster-bonus">Blademaster: TBD</li>
+                    <li id="assassin-bonus">Assassin: TBD</li>
+                    <li id="slayer-bonus">Slayer: TBD</li>
+                    <li id="apprentice-bonus">Apprentice: TBD</li>
+                    <li id="mage-bonus">Mage: TBD</li>
+                    <li id="spellblade-bonus">Spellblade: TBD</li>
+                    <li id="archmage-bonus">Archmage: TBD</li>
+                    <li id="necromancer-bonus">Necromancer: TBD</li>
+                    <li id="prophet-bonus">Prophet: TBD</li>
+                </ul>
+            </div>
+        </div>
+        <div id="game">
+            <h1>Random Number RPG</h1>
+            <div id="difficulty">
+                <label for="difficulty-selector">Difficulty:</label>
+                <select id="difficulty-selector">
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3">Hard</option>
+                </select>
+            </div>
+            <div id="region">
+                <label for="region-selector">Region:</label>
+                <select id="region-selector">
+                    <option value="Thornvale">Thornvale</option>
+                    <option value="Ironhold">Ironhold</option>
+                    <option value="Dragonskeep">Dragonskeep</option>
+                </select>
+            </div>
+            <div id="stats">
+                <p>Level: <span id="level">1</span></p>
+                <p>Player HP: <span id="player-hp">100</span></p>
+                <p>EXP: <span id="exp">0</span></p>
+                <p>EXP to Next Level: <span id="exp-to-next-level">100</span></p>
+                <p>Lives: <span id="lives">9</span></p>
+                <p>Gold: <span id="gold">0</span></p>
+                <p>Bonus Multiplier: <span id="bonus-multiplier">1.0</span>x</p>
+            </div>
+            <div id="gameplay">
+                <p>Guess a number between <span id="range">1-<span id="max-range"></span></span></p>
+                <p>Damage Range: <span id="damage-range">5-25</span></p>
+                <p>Gold Range: <span id="gold-range">1-5</span> gold</p>
+                <p>Enemy Type: <span id="enemy-type">Goblin</span></p>
+                <img id="enemy-image" src="" alt="Enemy Image">
+            </div>
+            <div id="input-area">
+                <input type="number" id="guess" min="1" placeholder="Your guess">
+                <button onclick="makeGuess()">Guess</button>
+            </div>
+            <div id="guesses">
+                <p>Your guesses: <span id="guesses-list"></span></p>
+            </div>
+            <div id="messages"></div>
+            <button id="explore-button" onclick="startNewGame()" style="display:none;">Explore</button>
+        </div>
+        <div id="quests">
+            <h2>Quests</h2>
+            <div id="current-quest">
+                <p id="quest-name">Quest: None</p>
+                <p id="quest-details">Details: No current quest</p>
+		<p id="quest-progress">Progress: 0/0</p> <!-- Existing progress display added here -->
+                <button id="complete-quest-button" onclick="completeQuest()" disabled>Complete Quest</button>
+            </div>
+        </div>
+        <div id="npcs">
+            <h2>NPCs</h2>
+            <button id="johnny-npc-button" onclick="selectNpc('Johnny')">Johnny</button>
+            <button id="emma-npc-button" onclick="selectNpc('Emma')" disabled>Emma</button>
+            <button id="brand-npc-button" onclick="selectNpc('Brand')" disabled>Brand</button>
+        </div>
+
+
+<div id="shop">
+    <h3>Shop</h3>
+    <div id="shop-houses">
+        <h4>Houses</h4>
+        <button onclick="purchaseItem('Tent', 30)">Tent - 30 gold</button>
+        <button onclick="purchaseItem('Cottage', 150)">Cottage - 150 gold</button>
+        <button onclick="purchaseItem('House', 1500)">House - 1500 gold</button>
+        <button onclick="purchaseItem('Mansion', 10000)">Mansion - 10,000 gold</button>
+        <button onclick="purchaseItem('Palace', 20000)">Palace - 20,000 gold</button>
+    </div>
+    <div id="shop-artifacts">
+        <h4>Artifacts</h4>
+        <button onclick="purchaseItem('Grimoire', 5000)">Grimoire - 5000 gold</button>
+        <button onclick="purchaseItem('Curse', 100)">Curse - 100 gold</button>
+        <button onclick="purchaseItem('Dice', 1000)">Dice - 1000 gold</button>
+        <button onclick="purchaseItem('Souls', 50000)">Souls - 50,000 gold</button>
+        <button onclick="purchaseItem('Heart', 10000)">Heart - 10,000 gold</button>
+    </div>
+</div>
+
+
+    </div>
+
+    <!-- Bonus Popup -->
+    <div id="bonus-popup">
+        <h2>Rolling for Bonus...</h2>
+        <p id="bonus-result">Rolling for a random EXP bonus between 5% and 20%...</p>
+        <button id="roll-button" onclick="rollBonus()">Roll Now</button>
+    </div>
+
+    <!-- Death Screen -->
+    <div id="death-screen" style="display:none;">
+        <h2>Game Over</h2>
+        <p>You have no lives left. Your journey ends here.</p>
+        <button onclick="restartGame()">Restart with Bonus</button>
+    </div>
+
+    <!-- Developer Section (Easily removable) -->
+    <div id="developer">
+        <h2>Developer Tools</h2>
+        <button onclick="increaseLevel()">Increase Level</button>
+        <button onclick="decreaseLives()">Decrease Lives</button>
+        <button onclick="addExp(50)">Add 50 EXP</button>
+        <button onclick="killEnemy('Demon')">Kill 1 Demon</button>
+        <button onclick="killEnemy('Dragon')">Kill 1 Dragon</button>
+	<button onclick="addGold(1000)">Add 1000 Gold</button>
+    </div>
+
+    <script>
+        let baseHP = 100;
+        let playerHP = baseHP;
+        let maxRange;
+        let enemyNumber;
+        let guesses = [];
+        let exp = 0;
+        let gold = 0;
+        let minDamage;
+        let maxDamage;
+        let enemyType;
+        let rangeLow;
+        let rangeHigh;
+        let level = 1;
+        let expToNextLevel = 100;
+        let expBonus = 1;
+	let dodgeChance = 0 // Initialize dodge chance as 0
+	let additionalGuesses = 0; // Extra guesses provided by the Knight class
+        let lives = 9;
+        let currentNpc = null;
+        let questProgress = {};  
+        let defeatedEnemies = { 'Goblin': 0, 'Wolf': 0, 'Imp': 0, 'Ogre': 0, 'Harpy': 0, 'Demon': 0, 'Dragon': 0 };
+	let currentGoldBonus = 1; // Default is 1 (no bonus)
+	let jobBonuses = {
+	    Beggar: 0,
+	    Farmer: 0,
+	    // Add other jobs as needed
+	};
+
+
+
+        const difficultySettings = {
+            1: {
+                maxRange: 100,
+                minDamage: 5,
+                maxDamage: 25,
+                enemies: [
+                    { type: "Goblin", range: [1, 10], goldReward: [1, 5] },
+                    { type: "Wolf", range: [1, 50], goldReward: [5, 10] },
+                    { type: "Imp", range: [1, 100], goldReward: [10, 20] }
+                ]
+            },
+            2: {
+                maxRange: 500,
+                minDamage: 35,
+                maxDamage: 55,
+                enemies: [
+                    { type: "Ogre", range: [1, 200], goldReward: [20, 35] },
+                    { type: "Harpy", range: [1, 350], goldReward: [35, 50] },
+                    { type: "Demon", range: [1, 500], goldReward: [50, 100] }
+                ]
+            },
+            3: {
+                maxRange: 1000,
+                minDamage: 50,
+                maxDamage: 100,
+                enemies: [
+                    { type: "Dragon", range: [1, 600], goldReward: [100, 200] },
+                    { type: "Lich", range: [1, 800], goldReward: [200, 300] },
+                    { type: "Titan", range: [1, 1000], goldReward: [300, 400] }
+                ]
+            }
+        };
+
+
+        const npcs = {
+            Johnny: {
+                unlocked: true, // Johnny is available from the start
+                quests: [
+                    {
+                        id: 'johnnyquest1',
+                        name: 'Goblin Hunt',
+                        details: 'Go and Kill 1 Goblin for a reward.',
+                        requirement: { enemy: 'Goblin', count: 1 },
+                        reward: { job: 'Beggar' }
+                    },
+                    {
+                        id: 'johnnyquest2',
+                        name: 'Level Up',
+                        details: 'Get to level 5.',
+                        requirement: { level: 5 },
+                        reward: { job: 'Farmer', unlockNpc: 'Emma' }
+                    },
+                    {
+                        id: 'johnnyquest3',
+                        name: 'Medium Difficulty Challenge',
+                        details: 'Kill 3 medium difficulty enemies.',
+                        requirement: { enemyTypes: ['Ogre', 'Harpy', 'Demon'], count: 3 },
+                        reward: { job: 'Squire', unlockNpc: 'Brand' }
+                    }
+                ],
+                currentQuestIndex: 0
+            },
+            Emma: {
+                unlocked: false, // Emma is locked initially
+                quests: [
+                    {
+                        id: 'emmaquest1',
+                        name: 'Ogre Challenge',
+                        details: 'Defeat 2 Ogres to earn a prize.',
+                        requirement: { enemy: 'Ogre', count: 2 },
+                        reward: { gold: 100 }
+                    }
+                ],
+                currentQuestIndex: 0
+            },
+    Brand: {
+        unlocked: false, // Brand is locked initially
+        quests: [
+            {
+                id: 'brandquest1',
+                name: 'Advanced Challenge',
+                details: 'Kill 5 hard difficulty enemies for a reward.',
+                requirement: { enemy: 'Hard', count: 5 }, // Requirement: kill 5 hard difficulty enemies
+                reward: { job: 'Knight', guesses: 1 } // Reward: unlock Knight job with +1 additional guess
+            }
+        ],
+        currentQuestIndex: 0
+    }
+};
+
+const purchasedItems = {
+    Tent: false,
+    Cottage: false,
+    House: false,
+    Mansion: false,
+    Palace: false,
+    Grimoire: false,
+    Curse: false,
+    Dice: 0, // Track the number of times "Dice" is purchased
+    Souls: false,
+    Heart: false
+};
+
+function purchaseItem(itemName, itemCost) {
+    // Check if the item has already been purchased (except for "Dice")
+    if (itemName !== 'Dice' && purchasedItems[itemName]) {
+        document.getElementById('messages').innerText = `You have already purchased ${itemName}.`;
+        return;
+    }
+
+    // Check if the player has enough gold
+    if (gold >= itemCost) {
+        gold -= itemCost;
+
+        // Handle house purchases to apply the highest gold bonus
+        if (['Tent', 'Cottage', 'House', 'Mansion', 'Palace'].includes(itemName)) {
+            purchasedItems[itemName] = true; // Mark the house as purchased
+            applyGoldBonus(itemName); // Apply the corresponding gold bonus
+        } else if (itemName === 'Dice') {
+            purchasedItems[itemName]++; // Increment the count for "Dice"
+        } else {
+            purchasedItems[itemName] = true; // Mark one-time purchase items as purchased
+        }
+
+        document.getElementById('messages').innerText = `You purchased ${itemName} for ${itemCost} gold.`;
+        updateStats();
+        updateShopButtons(); // Update the shop button states
+    } else {
+        document.getElementById('messages').innerText = `Not enough gold to purchase ${itemName}.`;
+    }
+}
+
+function applyGoldBonus(house) {
+    switch (house) {
+        case 'Tent':
+            currentGoldBonus = 1.2; // 20% gold bonus
+            break;
+        case 'Cottage':
+            currentGoldBonus = 1.4; // 40% gold bonus
+            break;
+        case 'House':
+            currentGoldBonus = 1.6; // 60% gold bonus
+            break;
+        case 'Mansion':
+            currentGoldBonus = 1.8; // 80% gold bonus
+            break;
+        case 'Palace':
+            currentGoldBonus = 2.0; // 100% gold bonus
+            break;
+        default:
+            currentGoldBonus = 1; // No bonus if no house is bought
+            break;
+    }
+
+    // Update the gold bonus to reflect the highest purchased house
+    document.getElementById('messages').innerText += ` Your gold bonus is now ${(currentGoldBonus - 1) * 100}%.`;
+}
+
+
+function updateShopButtons() {
+    const shopItems = {
+        Tent: 30,
+        Cottage: 150,
+        House: 1500,
+        Mansion: 10000,
+        Palace: 20000,
+        Grimoire: 5000,
+        Curse: 100,
+        Souls: 50000,
+        Heart: 10000
+    };
+
+    for (const [itemName, itemCost] of Object.entries(shopItems)) {
+        const button = document.querySelector(`button[onclick="purchaseItem('${itemName}', ${itemCost})"]`);
+        if (button) {
+            if (purchasedItems[itemName] && itemName !== 'Dice') {
+                button.disabled = true; // Disable the button if the item is already purchased
+                button.innerText = `${itemName} - Purchased`;
+            } else {
+                button.disabled = false; // Enable the button if the item can be purchased
+                button.innerText = `${itemName} - ${itemCost} gold`; // Reset button text
+            }
+        }
+    }
+
+    // Update the button for "Dice" separately
+    const diceButton = document.querySelector(`button[onclick="purchaseItem('Dice', 1000)"]`);
+    if (diceButton) {
+        diceButton.innerText = `Dice - 1000 gold (Owned: ${purchasedItems.Dice})`;
+        diceButton.disabled = false; // "Dice" can always be purchased
+    }
+}
+
+
+
+function addGold(amount) {
+    gold += amount;
+    document.getElementById('messages').innerText = `You gained ${amount} gold.`;
+    updateStats();
+}
+
+
+
+
+function showBonus(job, bonus) {
+    const jobBonusElement = document.getElementById(`${job.toLowerCase()}-bonus`);
+    if (jobBonusElement) {
+        jobBonusElement.innerText = `${job}: ${bonus}`;
+    }
+
+    // Display Knight bonus if unlocked
+    if (job === 'Knight' && additionalGuesses > 0) {
+        let knightBonusElement = document.getElementById('knight-bonus');
+        if (!knightBonusElement) {
+            // Create an element if it doesn’t exist
+            knightBonusElement = document.createElement('li');
+            knightBonusElement.id = 'knight-bonus';
+            document.querySelector('.job-bonus-list').appendChild(knightBonusElement);
+        }
+        knightBonusElement.innerText = 'Knight: +1 Guess';
+    }
+}
+
+function openBonusPopup(job, minBonus, maxBonus) {
+    document.getElementById('bonus-popup').style.display = 'block';
+    document.getElementById('bonus-result').innerText = `Rolling for a random EXP bonus between ${minBonus}% and ${maxBonus}%...`;
+    document.getElementById('roll-button').onclick = function() { rollBonus(job, minBonus, maxBonus); };
+    document.getElementById('roll-button').disabled = false; // Ensure the roll button is enabled
+}
+
+function rollBonus(job, minBonus, maxBonus) {
+    const randomBonus = Math.floor(Math.random() * (maxBonus - minBonus + 1)) + minBonus; // Random number between minBonus and maxBonus
+    jobBonuses[job] = randomBonus / 100; // Store the bonus percentage for this job as a multiplier
+    document.getElementById('bonus-result').innerText = `You got a ${randomBonus}% EXP bonus!`;
+    document.getElementById('roll-button').disabled = true; // Disable the button to prevent multiple rolls
+    setTimeout(() => {
+        document.getElementById('bonus-popup').style.display = 'none';
+        showBonus(job, `${randomBonus}% more EXP upon beating each enemy`);
+    }, 2000);
+}
+
+function selectJob(job) {
+
+    if (jobBonuses[job] > 0 || (job === 'Squire' && dodgeChance > 0)) {
+        document.getElementById('messages').innerText = `You have already rolled for the ${job} job bonus.`;
+        return; // Prevent rolling again
+    }
+
+    if (job === 'Farmer') {
+        openBonusPopup(job, 20, 30); // Open the bonus popup for Farmer with a range of 20% to 30%
+    } else if (job === 'Beggar') {
+        openBonusPopup(job, 5, 20); // Open the bonus popup for Beggar with a range of 5% to 20%
+    } else if (job === 'Squire') {
+        openDodgePopup(5, 20); // Open the dodge popup for Squire with a range of 5% to 20%
+    }
+}
+
+
+function openDodgePopup(minDodge, maxDodge) {
+    document.getElementById('bonus-popup').style.display = 'block';
+    document.getElementById('bonus-result').innerText = `Rolling for a dodge chance between ${minDodge}% and ${maxDodge}%...`;
+    document.getElementById('roll-button').onclick = function() {
+        rollDodge(minDodge, maxDodge);
+    };
+    document.getElementById('roll-button').disabled = false; // Ensure the roll button is enabled
+}
+
+function rollDodge(minDodge, maxDodge) {
+    dodgeChance = Math.floor(Math.random() * (maxDodge - minDodge + 1)) + minDodge; // Roll between min and max dodge chance
+    document.getElementById('bonus-result').innerText = `You got a ${dodgeChance}% dodge chance!`;
+    document.getElementById('roll-button').disabled = true; // Disable button to prevent multiple rolls
+    setTimeout(() => {
+        document.getElementById('bonus-popup').style.display = 'none';
+        document.getElementById('squire-bonus').innerText = `Squire: ${dodgeChance}% dodge chance`;
+    }, 2000);
+}
+
+        function selectNpc(npcName) {
+            currentNpc = npcs[npcName];
+            activateNextQuest();
+            displayCurrentQuest();
+        }
+
+        function activateNextQuest() {
+            if (currentNpc && currentNpc.unlocked) {
+                resetQuestProgress(); // Reset progress for the next quest
+                displayCurrentQuest();
+            }
+        }
+
+function resetQuestProgress() {
+    if (!currentNpc) return;
+
+    // Initialize or preserve existing progress for the current NPC
+    if (!questProgress[currentNpc]) {
+        questProgress[currentNpc] = { enemyKills: {} };
+    }
+    
+    const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+    
+    if (quest.requirement.enemy) {
+        // Specifically set up tracking for "Hard" difficulty enemies
+        if (quest.requirement.enemy === 'Hard') {
+            questProgress[currentNpc].enemyKills['Hard'] = questProgress[currentNpc].enemyKills['Hard'] || 0;
+        } else {
+            questProgress[currentNpc].enemyKills[quest.requirement.enemy] = questProgress[currentNpc].enemyKills[quest.requirement.enemy] || 0;
+        }
+    } else if (quest.requirement.enemyTypes) {
+        quest.requirement.enemyTypes.forEach(enemyType => {
+            questProgress[currentNpc].enemyKills[enemyType] = questProgress[currentNpc].enemyKills[enemyType] || 0;
+        });
+    }
+}
+
+function displayCurrentQuest() {
+    if (currentNpc && currentNpc.unlocked) {
+        const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+        document.getElementById('quest-name').innerText = `Quest: ${quest.name}`;
+        document.getElementById('quest-details').innerText = `Details: ${quest.details}`;
+        
+        // Calculate and display quest progress
+        const progress = calculateQuestProgress(quest);
+        document.getElementById('quest-progress').innerText = `Progress: ${progress.current}/${progress.required}`;
+        
+        document.getElementById('complete-quest-button').disabled = !checkQuestCompletion();
+    } else {
+        document.getElementById('quest-name').innerText = 'Quest: None';
+        document.getElementById('quest-details').innerText = 'Details: No current quest';
+        document.getElementById('quest-progress').innerText = 'Progress: 0/0';
+        document.getElementById('complete-quest-button').disabled = true;
+    }
+}
+
+
+function calculateQuestProgress(quest) {
+    let current = 0;
+    let required = 0;
+
+    if (quest.requirement.enemy) {
+        // Progress for defeating a specific type of enemy
+        required = quest.requirement.count;
+        current = questProgress[currentNpc]?.enemyKills[quest.requirement.enemy] || 0;
+    } else if (quest.requirement.level) {
+        // Progress for reaching a specific level
+        required = quest.requirement.level;
+        current = level;
+    } else if (quest.requirement.enemyTypes) {
+        // Progress for defeating multiple types of enemies
+        required = quest.requirement.count;
+        quest.requirement.enemyTypes.forEach(enemyType => {
+            current += questProgress[currentNpc]?.enemyKills[enemyType] || 0;
+        });
+    }
+
+    return { current, required };
+}
+
+
+
+        function unlockNpc(npcName) {
+            npcs[npcName].unlocked = true;
+            document.getElementById(`${npcName.toLowerCase()}-npc-button`).disabled = false;
+        }
+
+        function checkQuestCompletion() {
+            if (!currentNpc) return false;
+            const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+
+            if (quest.requirement.enemy) {
+                return questProgress[currentNpc].enemyKills[quest.requirement.enemy] >= quest.requirement.count;
+            } else if (quest.requirement.level) {
+                return level >= quest.requirement.level;
+            } else if (quest.requirement.enemyTypes) {
+                let count = 0;
+                for (const enemyType of quest.requirement.enemyTypes) {
+                    count += questProgress[currentNpc].enemyKills[enemyType] || 0;
+                }
+                return count >= quest.requirement.count;
+            }
+            return false;
+        }
+
+function completeQuest() {
+    if (currentNpc && checkQuestCompletion()) {
+        const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+        const reward = quest.reward;
+
+        // Handle job rewards
+        if (reward.job) {
+            const jobButton = document.getElementById(`${reward.job.toLowerCase()}-job`);
+            jobButton.classList.remove('locked');
+            jobButton.disabled = false;
+            document.getElementById('messages').innerText += ` You unlocked the ${reward.job} job!`;
+
+            // Apply additional guess bonus if the Knight job is unlocked
+            if (reward.job === 'Knight') {
+                additionalGuesses = reward.guesses; // Set additional guesses for Knight class
+                document.getElementById('messages').innerText += ' As a Knight, you get +1 additional guess before the enemy attacks!';
+                showBonus('Knight', '+1 Guess'); // Immediately display the Knight bonus in the Job Bonuses section
+            }
+        }
+
+        // Handle NPC unlock rewards
+        if (reward.unlockNpc) {
+            unlockNpc(reward.unlockNpc);
+        }
+
+        // Handle gold rewards
+        if (reward.gold) {
+            gold += reward.gold;
+        }
+
+        document.getElementById('messages').innerText += ` Quest Completed! ${reward.job ? reward.job + ' job unlocked.' : ''} ${reward.gold ? reward.gold + ' Gold.' : ''} ${reward.unlockNpc ? 'New NPC unlocked: ' + reward.unlockNpc + '.' : ''}`;
+
+        // Move to the next quest automatically
+        currentNpc.currentQuestIndex++;
+        if (currentNpc.currentQuestIndex < currentNpc.quests.length) {
+            activateNextQuest(); // Automatically activate the next quest
+        } else {
+            currentNpc = null;
+            document.getElementById('quest-name').innerText = 'Quest: None';
+            document.getElementById('quest-details').innerText = 'Details: No current quest';
+        }
+    }
+}
+
+function addExp(amount) {
+    // Calculate the total job bonus multiplier
+    let totalJobBonus = 1; // Start with a base multiplier of 1 (100%)
+    for (let job in jobBonuses) {
+        if (jobBonuses[job] > 0) {
+            totalJobBonus += jobBonuses[job]; // Add each job's bonus multiplier
+        }
+    }
+
+    const totalExpGained = Math.floor(amount * expBonus * totalJobBonus); // Apply all bonuses
+    exp += totalExpGained;
+
+    if (exp >= expToNextLevel) {
+        level++;
+        exp -= expToNextLevel;
+        expToNextLevel = Math.floor(expToNextLevel * 1.5);
+        baseHP = Math.round(baseHP * 1.2);
+        playerHP = baseHP;
+        document.getElementById('messages').innerText += ` You have leveled up to Level ${level}! Your HP is now ${playerHP}.`;
+    }
+    updateStats();
+    displayCurrentQuest();
+}
+
+
+        function updateStats() {
+            document.getElementById('player-hp').innerText = playerHP;
+            document.getElementById('range').innerText = `${rangeLow}-${rangeHigh}`;
+            document.getElementById('damage-range').innerText = `${minDamage}-${maxDamage}`;
+            document.getElementById('enemy-type').innerText = enemyType;
+            document.getElementById('exp').innerText = exp;
+            document.getElementById('level').innerText = level;
+            document.getElementById('exp-to-next-level').innerText = expToNextLevel;
+            document.getElementById('guesses-list').innerText = guesses.join(', ');
+            document.getElementById('lives').innerText = lives;
+            document.getElementById('gold').innerText = gold;
+            document.getElementById('bonus-multiplier').innerText = expBonus.toFixed(2);
+            updateEnemyImage();
+        }
+
+        function updateEnemyImage() {
+            const enemyImage = document.getElementById('enemy-image');
+            switch (enemyType) {
+                case 'Goblin':
+                    enemyImage.src = 'goblin-image.png';
+                    enemyImage.alt = 'Goblin';
+                    break;
+                case 'Wolf':
+                    enemyImage.src = 'wolf-image.png';
+                    enemyImage.alt = 'Wolf';
+                    break;
+                case 'Imp':
+                    enemyImage.src = 'imp-image.png';
+                    enemyImage.alt = 'Imp';
+                    break;
+                case 'Ogre':
+                    enemyImage.src = 'ogre-image.png';
+                    enemyImage.alt = 'Ogre';
+                    break;
+                case 'Harpy':
+                    enemyImage.src = 'harpy-image.png';
+                    enemyImage.alt = 'Harpy';
+                    break;
+                case 'Demon':
+                    enemyImage.src = 'demon-image.png';
+                    enemyImage.alt = 'Demon';
+                    break;
+                case 'Dragon':
+                    enemyImage.src = 'dragon-image.png';
+                    enemyImage.alt = 'Dragon';
+                    break;
+                default:
+                    enemyImage.src = '';
+                    enemyImage.alt = 'Enemy';
+                    break;
+            }
+        }
+
+let guessesThisTurn = 0; // Track the number of guesses per turn
+
+function makeGuess() {
+    if (playerHP <= 0) return;
+
+    const guess = parseInt(document.getElementById('guess').value);
+    if (!guess || guess < rangeLow || guess > rangeHigh || guesses.includes(guess)) {
+        alert("请输入一个有效的数字！在给出的数字范围内选一个未输入过的数字！");
+        return;
+    }
+
+    guesses.push(guess);
+    guessesThisTurn++; // Increment guesses made this turn
+    const enemyDamage = Math.floor(Math.random() * (maxDamage - minDamage + 1)) + minDamage;
+
+    if (guess === enemyNumber) {
+        // Logic for a correct guess: Gain EXP, gold, and update stats
+        defeatedEnemies[enemyType] = (defeatedEnemies[enemyType] || 0) + 1; // Increment defeated count
+
+        // Update quest progress if the quest is active
+        if (currentNpc && questProgress[currentNpc]) {
+            const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+            
+            // Check if the quest requires killing hard difficulty enemies
+            if (quest.requirement.enemy === 'Hard' && difficultySettings[parseInt(document.getElementById('difficulty-selector').value)].maxRange === 1000) {
+                // Increment "Hard" difficulty kill progress
+                questProgress[currentNpc].enemyKills['Hard'] = (questProgress[currentNpc].enemyKills['Hard'] || 0) + 1;
+            } else if (questProgress[currentNpc].enemyKills[enemyType] !== undefined) {
+                // Increment progress for other specific enemies
+                questProgress[currentNpc].enemyKills[enemyType]++;
+            }
+        }
+
+        const baseExpGained = rangeHigh;
+        
+        // Calculate total job bonus multiplier
+        let totalJobBonus = 1; // Start with a base multiplier of 1 (100%)
+        for (let job in jobBonuses) {
+            if (jobBonuses[job] > 0) {
+                totalJobBonus += jobBonuses[job]; // Add each job's bonus multiplier
+            }
+        }
+
+        const totalExpGained = Math.floor(baseExpGained * expBonus * totalJobBonus); // Apply all bonuses
+        exp += totalExpGained;
+
+        const goldRewardRange = difficultySettings[parseInt(document.getElementById('difficulty-selector').value)].enemies.find(e => e.type === enemyType).goldReward;
+        const baseGoldGained = Math.floor(Math.random() * (goldRewardRange[1] - goldRewardRange[0] + 1)) + goldRewardRange[0];
+        const goldGained = Math.floor(baseGoldGained * currentGoldBonus); // Apply the current gold bonus
+        gold += goldGained;
+
+        document.getElementById('messages').innerText = `You guessed correctly! The enemy is defeated! 
+        You gained ${totalExpGained} EXP (Base: ${baseExpGained}, Bonus Multiplier: ${(expBonus * 100 - 100).toFixed(0)}%, Job Bonus: ${(totalJobBonus * 100 - 100).toFixed(0)}%).
+        You also gained ${goldGained} gold (Base: ${baseGoldGained}, Gold Bonus: ${(currentGoldBonus * 100 - 100).toFixed(0)}%).`;
+
+        if (exp >= expToNextLevel) {
+            level++;
+            exp -= expToNextLevel;
+            expToNextLevel = Math.floor(expToNextLevel * 1.5);
+            baseHP = Math.round(baseHP * 1.2);
+            playerHP = baseHP;
+            document.getElementById('messages').innerText += ` You have leveled up to Level ${level}! Your HP is now ${playerHP}.`;
+        }
+
+        updateStats();
+        displayCurrentQuest(); // Update quest progress display
+
+        // Check for quest completion immediately after the kill
+        if (checkQuestCompletion()) {
+            document.getElementById('complete-quest-button').disabled = false;
+            document.getElementById('messages').innerText += ' You have completed the quest! Click "Complete Quest" to claim your reward.';
+        }
+
+        endGame();
+
+        // Reset guesses for the next turn since the enemy is defeated
+        guessesThisTurn = 0;
+
+    } else {
+        // Handle an incorrect guess
+        const hint = guess < enemyNumber ? 'Higher' : 'Lower';
+        
+        // Check if the player has remaining guesses for this turn
+        if (guessesThisTurn < (1 + additionalGuesses)) {
+            document.getElementById('messages').innerText = `Incorrect guess. Try guessing ${hint}. You have ${1 + additionalGuesses - guessesThisTurn} guesses remaining this turn.`;
+        } else {
+            // Player takes damage if no additional guesses remain
+            if (Math.random() * 100 < dodgeChance) {
+                // Player successfully dodges the attack
+                document.getElementById('messages').innerText = `You dodged the enemy's attack! Try guessing ${hint}.`;
+            } else {
+                // Player fails to dodge and takes damage
+                playerHP -= enemyDamage;
+                document.getElementById('messages').innerText = `Wrong guess! The correct number is ${hint}. The enemy attacks and deals ${enemyDamage} damage!`;
+
+                if (playerHP <= 0) {
+                    document.getElementById('messages').innerText = `You have been defeated by the enemy.`;
+                    playerHP = 0;
+                    lives--;
+                    updateStats();
+                    checkGameOver();
+                }
+            }
+
+            // Reset guesses for the next turn since the enemy has attacked
+            guessesThisTurn = 0;
+        }
+
+        updateStats();
+    }
+
+    document.getElementById('guess').value = '';
+}
+
+
+
+
+
+        function endGame() {
+            document.getElementById('explore-button').style.display = 'block';
+            document.getElementById('guess').disabled = true;
+        }
+
+        function startNewGame() {
+            const difficulty = parseInt(document.getElementById('difficulty-selector').value);
+            const settings = difficultySettings[difficulty];
+
+            maxRange = settings.maxRange;
+            minDamage = settings.minDamage;
+            maxDamage = settings.maxDamage;
+            const enemy = settings.enemies[Math.floor(Math.random() * settings.enemies.length)];
+            enemyType = enemy.type;
+            rangeLow = enemy.range[0];
+            rangeHigh = enemy.range[1];
+            enemyNumber = Math.floor(Math.random() * (rangeHigh - rangeLow + 1)) + rangeLow;
+
+            guesses = [];
+            playerHP = baseHP;
+            document.getElementById('explore-button').style.display = 'none';
+            document.getElementById('guess').disabled = false;
+            document.getElementById('messages').innerText = '';
+
+            const goldRewardRange = enemy.goldReward;
+            document.getElementById('gold-range').innerText = `${goldRewardRange[0]}-${goldRewardRange[1]}`;
+
+            updateStats();
+        }
+
+        function checkGameOver() {
+            if (lives <= 0) {
+                document.getElementById('death-screen').style.display = 'block';
+                document.getElementById('game').style.display = 'none';
+            } else {
+                endGame();
+            }
+        }
+
+function restartGame() {
+    // Reset job bonuses
+    jobBonuses = { Beggar: 0, Farmer: 0 }; // Reinitialize the job bonuses object with the default jobs
+
+    // Reset the displayed job bonuses in the UI
+    const jobBonusElements = document.querySelectorAll('.job-bonus-list li');
+    jobBonusElements.forEach(element => {
+        element.innerText = `${element.id.split('-')[0].charAt(0).toUpperCase() + element.id.split('-')[0].slice(1)}: TBD`; // Reset display to 'TBD'
+    });
+
+    // Reset each purchased item property
+    purchasedItems.Tent = false;
+    purchasedItems.Cottage = false;
+    purchasedItems.House = false;
+    purchasedItems.Mansion = false;
+    purchasedItems.Palace = false;
+    purchasedItems.Grimoire = false;
+    purchasedItems.Curse = false;
+    purchasedItems.Dice = 0; // Reset the count for "Dice"
+    purchasedItems.Souls = false;
+    purchasedItems.Heart = false;
+
+    // Reset NPCs and Quests
+    currentNpc = null; // Reset the currently active NPC
+    for (const npc in npcs) {
+        npcs[npc].currentQuestIndex = 0; // Reset all NPCs to their first quest
+        npcs[npc].unlocked = (npc === 'Johnny'); // Only Johnny is unlocked by default
+        document.getElementById(`${npc.toLowerCase()}-npc-button`).disabled = !npcs[npc].unlocked; // Enable or disable NPC buttons based on their unlocked state
+    }
+
+    // Reset the quest display
+    document.getElementById('quest-name').innerText = 'Quest: None';
+    document.getElementById('quest-details').innerText = 'Details: No current quest';
+    document.getElementById('complete-quest-button').disabled = true; // Disable the 'Complete Quest' button
+
+    // Reset job unlocks
+    const jobButtons = document.querySelectorAll('.job-button');
+    jobButtons.forEach(button => {
+        button.classList.add('locked');
+        button.disabled = true;
+    });
+
+    // Reset defeated enemies for quest requirements
+    defeatedEnemies = { 'Goblin': 0, 'Wolf': 0, 'Imp': 0, 'Ogre': 0, 'Harpy': 0, 'Demon': 0, 'Dragon': 0 };
+    questProgress = {}; // Reset quest progress for all NPCs
+
+    // Reset other game variables
+    lives = 9;
+    level = 1;
+    exp = 0;
+    gold = 0;
+    expToNextLevel = 100;
+    baseHP = 100;
+    playerHP = baseHP;
+    expBonus = 1 + (level * 0.05); // Correctly calculate expBonus
+
+    // Hide death screen and reset game display
+    document.getElementById('death-screen').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    
+    updateStats();
+    updateShopButtons(); // Update the shop button states
+    startNewGame();
+}
+
+
+        function increaseLevel() {
+            level++;
+            expToNextLevel = Math.floor(expToNextLevel * 1.5);
+            baseHP = Math.round(baseHP * 1.2);
+            playerHP = baseHP;
+            updateStats();
+        }
+
+        function decreaseLives() {
+            lives--;
+            updateStats();
+            checkGameOver();
+        }
+
+function killEnemy(enemyType) {
+    // Increment kill count for the specified enemy
+    defeatedEnemies[enemyType] = (defeatedEnemies[enemyType] || 0) + 1;
+
+    // Update quest progress if the quest is active
+    if (currentNpc && questProgress[currentNpc]) {
+        const quest = currentNpc.quests[currentNpc.currentQuestIndex];
+
+        // Check if the quest requires hard difficulty kills and the killed enemy is in the hard difficulty category
+        if (quest.requirement.enemy === 'Hard' && ['Dragon', 'Lich', 'Titan'].includes(enemyType)) {
+            questProgress[currentNpc].enemyKills['Hard'] = (questProgress[currentNpc].enemyKills['Hard'] || 0) + 1;
+        } else if (questProgress[currentNpc].enemyKills[enemyType] !== undefined) {
+            // Update specific enemy kills if required by the quest
+            questProgress[currentNpc].enemyKills[enemyType]++;
+        }
+    }
+
+    // Display message and update UI
+    document.getElementById('messages').innerText = `Developer Tool: You killed a ${enemyType}!`;
+    updateStats();
+    displayCurrentQuest();
+
+    // Check for quest completion
+    if (checkQuestCompletion()) {
+        document.getElementById('complete-quest-button').disabled = false;
+        document.getElementById('messages').innerText += ' You have completed the quest! Click "Complete Quest" to claim your reward.';
+    }
+}
+
+
+
+        document.getElementById('difficulty-selector').addEventListener('change', startNewGame);
+        document.getElementById('explore-button').addEventListener('click', startNewGame);
+        document.getElementById('guess').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') makeGuess();
+        });
+
+        startNewGame();
+    </script>
+<!--客服 开始-->
+<script src="//g8hh.github.io/static/js/jquery.min.js"></script>
+<link rel="stylesheet" href="//g8hh.github.io/static/css/kf.css" type="text/css" media="screen" charset="utf-8">
+<script src="//g8hh.github.io/static/js/kf.js"></script>
+<!-- 客服 结束 -->
+<!--站长统计--> 
+<div style="display: none">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?028b1b5f659ed138230f4cafd7ad0dfc";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+    </div>
+</body>
+</html>
